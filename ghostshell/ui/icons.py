@@ -1,0 +1,20 @@
+
+CHECK = "✓"
+CROSS = "✗"
+WARNING = "⚠️"
+MEMORY = "📚"
+IDEA = "💡"
+EDIT = "✏️"
+TARGET = "🎯"
+POST = "📝"
+SPARKLES = "✨"
+TROPHY = "🏆"
+FIRE = "🔥"
+EYES = "👁️"
+CHAT = "💬"
+BOOKMARK = "🔖"
+REFRESH = "🔄"
+ARROW_RIGHT = "→"
+MAGIC = "◐"
+
+
