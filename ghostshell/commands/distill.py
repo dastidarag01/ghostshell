@@ -9,7 +9,7 @@ from ghostshell.prompts import (
     MSG_DISTILL_WELCOME,
     ERR_NO_MEMORIES, ERR_ADD_POSTS_FIRST,
 )
-from ghostshell.commands._utils import require_init, require_api_key, create_gemini_client
+from ghostshell.commands._utils import require_init, create_llm_client
 from ghostshell.ui import render_completion_animation
 
 
@@ -17,7 +17,6 @@ def distill_command() -> None:
     Logger.title(MSG_DISTILL_WELCOME)
 
     require_init()
-    api_key = require_api_key()
 
     # Load memories
     memories = memory.load_all()
@@ -30,7 +29,7 @@ def distill_command() -> None:
         posts_summary = memory.get_summary(memories)
         
         # Calling API
-        client = create_gemini_client(api_key)
+        client = create_llm_client()
         analysis = client.analyze_voice(posts_summary, len(memories))
         
         # Create technical topics list for deduplication

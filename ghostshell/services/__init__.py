@@ -1,2 +1,2 @@
 
-__all__ = ["GeminiClient", "memory", "blueprint"]
+__all__ = ["LLMService", "memory", "blueprint"]

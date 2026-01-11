@@ -6,14 +6,13 @@ from ghostshell.logger import Logger, get_console
 from ghostshell.models import Memory
 from ghostshell.services import memory
 from ghostshell.prompts import MSG_ADD_WELCOME, MSG_FILE_SAVED
-from ghostshell.commands._utils import require_init, require_api_key, create_gemini_client, read_multiline_input
+from ghostshell.commands._utils import require_init, create_llm_client, read_multiline_input
 
 
 def add_command() -> None:
     Logger.title(MSG_ADD_WELCOME)
 
     require_init()
-    api_key = require_api_key()
     
     Logger.newline()
     instructions = Panel(
@@ -29,7 +28,7 @@ def add_command() -> None:
         Logger.warning("No input provided\n")
         raise typer.Exit(1)
 
-    client = create_gemini_client(api_key)
+    client = create_llm_client()
 
     parsed = client.parse_add_memory(user_input)
 

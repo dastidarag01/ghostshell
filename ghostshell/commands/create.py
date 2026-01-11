@@ -8,10 +8,10 @@ from rich.panel import Panel
 
 from ghostshell.logger import Logger, get_console
 from ghostshell.models import SuggestedIdea, Memory
-from ghostshell.services.gemini import GeminiClient
+from ghostshell.services.llm import LLMService
 from ghostshell.services import blueprint, memory
 from ghostshell.prompts import MSG_CREATE_WELCOME
-from ghostshell.commands._utils import require_init, require_api_key, create_gemini_client
+from ghostshell.commands._utils import require_init, create_llm_client
 from ghostshell.ui import render_idea_cards, render_post_preview, render_completion_animation, SPARKLES, CHECK, CHAT, CROSS
 
 
@@ -19,10 +19,9 @@ def create_command() -> None:
     Logger.title(MSG_CREATE_WELCOME)
 
     require_init()
-    api_key = require_api_key()
     bp = blueprint.load()
 
-    client = create_gemini_client(api_key)
+    client = create_llm_client()
     
     Logger.newline()
     seed_prompt = Panel(
@@ -54,7 +53,7 @@ def _carousel_loop(
     ignored_topics: List[str],
     feedback_history: List[str],
     seed: str,
-    client: GeminiClient,
+    client: LLMService,
     blueprint
 ) -> None:
     while True:
@@ -127,7 +126,7 @@ def _fetch_more_ideas(
     ignored_topics: List[str],
     feedback_history: List[str],
     seed: str,
-    client: GeminiClient,
+    client: LLMService,
     blueprint,
 ) -> None:
     if current_batch:
@@ -156,7 +155,7 @@ def _fetch_more_ideas(
             ))
 
 
-def _drafting_loop(client: GeminiClient, blueprint, idea: SuggestedIdea) -> bool:
+def _drafting_loop(client: LLMService, blueprint, idea: SuggestedIdea) -> bool:
     Logger.newline()
     Logger.info(f"Topic: [gs.bold_primary]{idea.topic}[/gs.bold_primary]")
     Logger.info(f"Angle: [gs.info]{idea.angle}[/gs.info]\n")

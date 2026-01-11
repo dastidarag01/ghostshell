@@ -7,6 +7,7 @@ from rich.prompt import Prompt, Confirm
 from rich.panel import Panel
 
 from ghostshell.logger import Logger
+from ghostshell.constants import LLMProvider, DEFAULT_DATA_DIR
 from ghostshell.prompts import (
     MSG_INIT_WELCOME, MSG_INIT_COMPLETE,
     ERR_ALREADY_INITIALIZED, ERR_EMPTY_API_KEY, ERR_PERMISSION_DENIED,
@@ -43,7 +44,7 @@ def init_command() -> None:
     # Get data directory
     data_dir_input = Prompt.ask(
         "Where should we store your content?",
-        default="./ghostshell-data"
+        default=DEFAULT_DATA_DIR
     )
     data_dir = Path(data_dir_input).resolve()
 
@@ -58,7 +59,19 @@ def init_command() -> None:
         Logger.newline()
 
     # Get API key
-    api_key = Prompt.ask("Gemini API Key", password=True)
+    provider_str = Prompt.ask(
+        "Select LLM Provider",
+        choices=[p.value for p in LLMProvider],
+        default=LLMProvider.GEMINI.value
+    ).lower()
+    
+    provider = LLMProvider(provider_str)
+
+    if provider == LLMProvider.GEMINI:
+        api_key = Prompt.ask("Gemini API Key", password=True)
+    else:
+        # Fallback although choices are limited
+        api_key = Prompt.ask(f"{provider.value.title()} API Key", password=True)
 
     # Validate API key
     if not api_key or not api_key.strip():
@@ -74,7 +87,10 @@ def init_command() -> None:
 
         # Write .env file
         with open(env_path, "w", encoding="utf-8") as f:
-            f.write(f"GEMINI_API_KEY={api_key.strip()}\n")
+            if provider == LLMProvider.GEMINI:
+                f.write(f"GEMINI_API_KEY={api_key.strip()}\n")
+            
+            f.write(f"GHOSTSHELL_LLM_PROVIDER={provider.value}\n")
             f.write(f"GHOSTSHELL_DATA_DIR={data_dir}\n")
 
         # Create sample memory
