@@ -160,9 +160,9 @@ def _drafting_loop(client: LLMService, blueprint, idea: SuggestedIdea) -> bool:
     Logger.info(f"Topic: [gs.bold_primary]{idea.topic}[/gs.bold_primary]")
     Logger.info(f"Angle: [gs.info]{idea.angle}[/gs.info]\n")
 
-    post_feedback = None  # Track feedback for this specific post
+    post_history = []
     with Logger.status("[gs.magic]Drafting post...[/gs.magic]"):
-        content = client.generate_post(idea.topic, blueprint, feedback=post_feedback)
+        content = client.generate_post(idea.topic, blueprint, history=post_history)
 
     while True:
         Logger.newline()
@@ -200,9 +200,9 @@ def _drafting_loop(client: LLMService, blueprint, idea: SuggestedIdea) -> bool:
                 message="What should we change? (e.g., 'make it shorter', 'different hook')",
             ).execute()
             if feedback:
-                post_feedback = feedback
+                post_history.append({'content': content, 'feedback': feedback})
                 with Logger.status("[gs.magic]Improving post...[/gs.magic]"):
-                    content = client.generate_post(idea.topic, blueprint, feedback=post_feedback)
+                    content = client.generate_post(idea.topic, blueprint, history=post_history)
             continue
 
         elif action == "d":

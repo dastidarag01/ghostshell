@@ -40,3 +40,7 @@ def create_llm_client() -> LLMService:
         raise typer.Exit(1)
 
 
+
+def read_multiline_input() -> str:
+    import sys
+    return sys.stdin.read()

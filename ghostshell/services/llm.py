@@ -73,7 +73,7 @@ class LLMService:
     def _call_llm_json(self, prompt: str, task_desc: str, model: str = None) -> Dict[str, Any]:
         if self.provider == LLMProvider.GEMINI:
             if model is None:
-                model = self.fast_model
+                model = self.deep_model
 
             max_retries = 3
             for attempt in range(max_retries):
@@ -106,7 +106,7 @@ class LLMService:
     def analyze_voice(self, posts_content: str, post_count: int) -> Dict:
         prompt = ANALYZE_VOICE_PROMPT.format(posts_data=posts_content, post_count=post_count)
         provider_name = self.provider.value.title() if isinstance(self.provider, LLMProvider) else str(self.provider).title()
-        return self._call_llm_json(prompt, f"Performing deep analysis with {provider_name}...", model=getattr(self, 'deep_model', None))
+        return self._call_llm_json(prompt, f"Performing deep analysis with {provider_name}...", model=self.deep_model)
 
     def brainstorm_ideas(
         self,
@@ -148,10 +148,29 @@ class LLMService:
         data = self._call_llm_json(prompt, "Brainstorming ideas...")
         return data['ideas']
 
-    def generate_post(self, topic: str, blueprint: Blueprint, feedback: str = None) -> str:
-        feedback_section = ""
-        if feedback:
-            feedback_section = f"\n\nUSER FEEDBACK: {feedback}\nPlease adjust the post based on this feedback."
+    def generate_post(self, topic: str, blueprint: Blueprint, history: List[Dict[str, str]] = None) -> str:
+        history_section = ""
+        if history:
+            history_parts = []
+            for i, entry in enumerate(history, 1):
+                part = (
+                    f"## ITERATION {i}\n"
+                    f"### Generated Content:\n"
+                    f"{entry['content']}\n\n"
+                    f"### User Feedback:\n"
+                    f"> {entry['feedback']}"
+                )
+                history_parts.append(part)
+            
+            history_text = "\n\n".join(history_parts)
+            history_section = (
+                f"\n\n# HISTORY OF ITERATIONS\n"
+                f"Below is the history of previous drafts and the user's feedback on them. "
+                f"Trace the evolution and address the latest feedback.\n\n"
+                f"{history_text}\n\n"
+                f"--- END OF HISTORY ---\n"
+                f"IMPORTANT: Generate the next version (Version {len(history) + 1}) based on the latest feedback while retaining the strengths of previous versions."
+            )
 
         prompt = GENERATE_POST_PROMPT.format(
             topic=topic,
@@ -166,14 +185,14 @@ class LLMService:
             narrative_flow=blueprint.narrative_architecture,
             pacing_and_density=blueprint.pacing_and_density,
             anti_patterns=blueprint.anti_patterns,
-            feedback_section=feedback_section
+            history_section=history_section
         )
 
         provider_name = self.provider.value.title() if isinstance(self.provider, LLMProvider) else str(self.provider).title()
         with Logger.status(f"Generating post with {provider_name}..."):
             if self.provider == LLMProvider.GEMINI:
                 response = self.client.models.generate_content(
-                    model=self.fast_model,
+                    model=self.deep_model,
                     contents=prompt
                 )
                 return self._extract_text_from_response(response)

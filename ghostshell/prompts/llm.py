@@ -143,7 +143,7 @@ Return a JSON object with this exact structure:
 }}
 """ + JSON_OUTPUT_INSTRUCTIONS
 
-GENERATE_POST_PROMPT = """Write an article for LinkedIn based on this Blueprint.
+GENERATE_POST_PROMPT = """You are a world-class technical writer drafting an article for LinkedIn based on this Blueprint.
 
 # TOPIC: {topic}
 
@@ -157,6 +157,7 @@ Voice: {voice}
 4. **Subtle Philosophy**: Weave in the `{core_philosophy}` naturally.
 5. **No Preamble**: Return ONLY the post content.
 6. **Plain Text Only**: Do not include any unicode characters or markdown formatting in the output.
+7. **Length Guidance**: Aim for approximately 1500 characters or around 250 words.
 
 # STYLE OUTLINE
 Markers: {linguistic_markers}
@@ -166,7 +167,7 @@ Narrative Architecture: {narrative_flow}
 Pacing/Density: {pacing_and_density}
 Anti-patterns: {anti_patterns}
 
-{feedback_section}"""
+{history_section}"""
 
 PARSE_ADD_MEMORY_PROMPT = """Parse the following free-text input into a structured memory format.
 
